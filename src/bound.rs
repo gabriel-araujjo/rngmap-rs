@@ -39,12 +39,14 @@ impl<K> Point<K> {
         }
     }
 
-    fn inner(&self) -> &K {
+    #[inline]
+    pub(crate) fn inner(&self) -> &K {
         match self {
             Point::Included(k) | Point::Excluded(k) => k,
         }
     }
 
+    #[inline]
     pub(crate) fn swap_bound(self) -> Self {
         match self {
             Point::Included(k) => Point::Excluded(k),

@@ -47,7 +47,7 @@ where
 impl<'a, K, Q, V> RemoveUntil<Q> for CursorMut<'a, NodeAdapter<K, V>>
 where
     K: Borrow<Q>,
-    Q: Ord + Debug,
+    Q: Ord,
 {
     type LastValue = V;
 
@@ -57,7 +57,6 @@ where
         while let Some(node) = self.get() {
             if let Some(upper_limit) = upper_limit {
                 if node.key.borrow() > upper_limit {
-                    // println!("node.key {:?} > upper_limit {:?}", node.key.borrow(), upper_limit);
                     break;
                 }
             }

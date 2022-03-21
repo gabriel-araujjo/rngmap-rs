@@ -10,12 +10,12 @@ use crate::bound::{is_valid_range, Point};
 use crate::node::{Node, NodeAdapter};
 use crate::remove_until::RemoveUntil;
 
-pub struct RangeMap<K, V> {
-    val: V,
-    map: RBTree<NodeAdapter<Point<K>, V>>,
+pub struct SectionMap<K, V> {
+    pub (crate) val: V,
+    pub (crate) map: RBTree<NodeAdapter<Point<K>, V>>,
 }
 
-impl<K: Debug, V: Debug> Debug for RangeMap<K, V> {
+impl<K: Debug, V: Debug> Debug for SectionMap<K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_set()
             .entry(&self.val)
@@ -24,7 +24,7 @@ impl<K: Debug, V: Debug> Debug for RangeMap<K, V> {
     }
 }
 
-impl<K, V> RangeMap<K, V> {
+impl<K, V> SectionMap<K, V> {
     pub fn new(val: V) -> Self {
         Self {
             val,
@@ -33,7 +33,7 @@ impl<K, V> RangeMap<K, V> {
     }
 }
 
-impl<K, V: Default> Default for RangeMap<K, V> {
+impl<K, V: Default> Default for SectionMap<K, V> {
     fn default() -> Self {
         Self {
             val: Default::default(),
@@ -42,19 +42,19 @@ impl<K, V: Default> Default for RangeMap<K, V> {
     }
 }
 
-impl<K, V> RangeMap<K, V>
+impl<K, V> SectionMap<K, V>
 where
-    K: Ord + Copy + Debug,
-    V: Clone + Eq + Debug,
+    K: Ord + Copy,
+    V: Clone + Eq,
 {
-    pub fn insert<R>(&mut self, range: R, value: V)
+    pub fn insert<R>(&mut self, section: R, value: V)
     where
         R: RangeBounds<K>,
     {
-        let start = Point::from_bound_ref(range.start_bound());
-        let end = Point::from_bound_ref(range.end_bound());
+        let start = Point::from_bound_ref(section.start_bound());
+        let end = Point::from_bound_ref(section.end_bound());
 
-        if !is_valid_range(&range) {
+        if !is_valid_range(&section) {
             return;
         }
 
@@ -107,7 +107,7 @@ where
     }
 }
 
-impl<K, V> Index<K> for RangeMap<K, V>
+impl<K, V> Index<K> for SectionMap<K, V>
 where
     K: Ord + Copy,
 {
@@ -123,7 +123,7 @@ where
 }
 
 #[cfg(any(fuzzing, test))]
-impl<K, V> RangeMap<K, V>
+impl<K, V> SectionMap<K, V>
 where
     K: Ord + Debug,
     V: Ord + Debug,
@@ -155,13 +155,13 @@ where
 #[cfg(test)]
 mod test {
 
-    use super::RangeMap;
+    use super::SectionMap;
 
     #[test]
     fn index() {
         use std::ops::Bound;
 
-        let mut range = RangeMap::new('A');
+        let mut range = SectionMap::new('A');
         // println!("{:?}", range);
 
         assert_eq!(range[10], 'A');
@@ -215,7 +215,7 @@ mod test {
 
     #[test]
     fn fuzzy_crash_20220315_1() {
-        let mut range = RangeMap::new('Z');
+        let mut range = SectionMap::new('Z');
         range.check_canonical();
 
         range.insert(-1..=16, 'B');
@@ -230,7 +230,7 @@ mod test {
 
     #[test]
     fn fuzzy_crash_20220315_2() {
-        let mut range = RangeMap::new('Z');
+        let mut range = SectionMap::new('Z');
         assert_eq!(range[0], 'Z');
         range.check_canonical();
 
